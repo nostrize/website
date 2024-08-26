@@ -26,10 +26,10 @@ export function migrationScript(db: Database) {
     .query<
       { count: number },
       string
-    >("SELECT COUNT(*) FROM nip05 WHERE name = ?")
+    >("SELECT COUNT(*) as count FROM nip05 WHERE name = ?")
     .get("nostrize");
 
-  if (result?.count === 0) {
+  if (result!.count === 0) {
     const changes = db.run(
       `INSERT INTO nip05 (name, pubkey, relays) VALUES (?, ?, ?)`,
       ["nostrize", process.env.NOSTRIZE_PUBKEY, JSON.stringify(relays)],

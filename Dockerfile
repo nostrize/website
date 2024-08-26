@@ -15,6 +15,7 @@ RUN mkdir -p /app/db
 
 # Copy the rest of the application code
 COPY ./src ./src
+COPY ./images ./images
 
 # Expose the port the app runs on
 EXPOSE 3005
