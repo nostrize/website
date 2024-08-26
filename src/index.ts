@@ -5,6 +5,7 @@ import { _302, _404 } from "./response";
 const db = getDb();
 
 const server = Bun.serve({
+  port: 3005,
   fetch(req) {
     const url = new URL(req.url);
 
