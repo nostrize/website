@@ -18,4 +18,5 @@ services:
   domains:
   - www.nostrize.me
   - nostrize.me
+  healthCheckPath: /health
 version: "1"

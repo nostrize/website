@@ -12,6 +12,10 @@ const server = Bun.serve({
   fetch(req) {
     const url = new URL(req.url);
 
+    if (url.pathname === "/health") {
+      return new Response(null, { status: 200 });
+    }
+
     // Handle the /.well-known/nostr.json?name=xxx path
     if (url.pathname === "/.well-known/nostr.json") {
       return handleNip05({ url, db });
