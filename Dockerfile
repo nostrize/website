@@ -17,4 +17,4 @@ COPY ./src ./src
 EXPOSE 3005
 
 # Command to run the application
-CMD ["bun", "run", "src" "index.ts"]
+CMD ["bun", "run", "src/index.ts"]
