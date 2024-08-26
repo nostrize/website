@@ -6,12 +6,7 @@ services:
   repo: https://github.com/nostrize/website
   plan: free
   envVars:
-  - key: DB_NAME
-    sync: false
-  - key: NOSTRIZE_RELAYS
-    sync: false
-  - key: NOSTRIZE_PUBKEY
-    sync: false
+  - fromGroup: nostrize-website
   region: frankfurt
   dockerContext: .
   dockerfilePath: ./Dockerfile
