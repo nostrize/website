@@ -9,6 +9,10 @@ export function getDb(): Database {
     throw new Error("DB_NAME is not defined");
   }
 
+  const dbPath = path.join("db", dbName);
+
+  console.log(dbPath);
+
   const db = new Database(path.join("db", dbName), {
     create: true,
     strict: true,

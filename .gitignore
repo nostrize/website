@@ -174,4 +174,4 @@ dist
 # Finder (MacOS) folder config
 .DS_Store
 
-db/nostrize.*.sqlite*
+db/nostrize-website.*.sqlite*

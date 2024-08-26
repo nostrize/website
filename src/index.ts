@@ -1,8 +1,11 @@
 import { getDb } from "./db";
+import { migrationScript } from "./migrate";
 import { handleNip05 } from "./nip05";
 import { _302, _404 } from "./response";
 
 const db = getDb();
+
+migrationScript(db);
 
 const server = Bun.serve({
   port: 3005,

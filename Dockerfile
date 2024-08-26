@@ -10,6 +10,9 @@ COPY package.json bun.lockb ./
 # Install dependencies
 RUN bun install
 
+# Ensure db directory exists with proper permissions
+RUN mkdir -p /app/db
+
 # Copy the rest of the application code
 COPY ./src ./src
 
