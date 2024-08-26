@@ -1,0 +1,21 @@
+# Exported from Render on 2024-08-26T20:28:29Z
+services:
+- type: web
+  name: website
+  runtime: docker
+  repo: https://github.com/nostrize/website
+  plan: free
+  envVars:
+  - key: DB_NAME
+    sync: false
+  - key: NOSTRIZE_RELAYS
+    sync: false
+  - key: NOSTRIZE_PUBKEY
+    sync: false
+  region: frankfurt
+  dockerContext: .
+  dockerfilePath: ./Dockerfile
+  domains:
+  - www.nostrize.me
+  - nostrize.me
+version: "1"
