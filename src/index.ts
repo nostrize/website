@@ -1,17 +1,8 @@
-import { schnorr } from "@noble/curves/secp256k1";
-import { sha256 } from "@noble/hashes/sha256";
-
-import { handleNip05 } from "./nip05";
-import {
-  _302,
-  _404,
-  _409,
-  errorResponse,
-  favico,
-  okResponse,
-} from "./response";
+import { handleNip05, validateNip05Post } from "./nip05";
+import { _302, _404, favico, okResponse } from "./response";
 import type { NostrJson } from "./types";
 import { commitAndPushChanges } from "./git";
+import { Either } from "./utils";
 
 const file = await Bun.file("db/nostr.json").text();
 const json: NostrJson = JSON.parse(file);
@@ -38,27 +29,26 @@ const get = (url: URL) => {
   return _404;
 };
 
-const post = async (url: URL, body: any) => {
+const post = async (url: URL, req: Request, body: any) => {
   if (url.pathname === "/v1/nostr-json/") {
-    const { name, pubkey, relays, signature } = body;
+    const either = validateNip05Post(body, req.headers, json);
 
-    if (json.names[name]) {
-      return _409;
+    if (Either.isLeft(either)) {
+      return Either.getLeft(either);
     }
 
-    // Ensure the message order is exactly as it was when signed
-    const message = JSON.stringify({ name, pubkey, relays });
+    const { name, pubkey, relays } = Either.getRight(either);
 
-    const isValidSignature = schnorr.verify(signature, sha256(message), pubkey);
-
-    if (!isValidSignature) {
-      return errorResponse("Message is not valid", 401);
-    }
-
+    // update memory object
     json["names"][name] = pubkey;
     json["relays"][pubkey] = relays;
 
-    await commitAndPushChanges(json);
+    // push change to git
+    const either2 = await commitAndPushChanges(json, req.headers);
+
+    if (Either.isLeft(either2)) {
+      return Either.getLeft(either2);
+    }
 
     return okResponse;
   }
@@ -78,7 +68,7 @@ const server = Bun.serve({
     if (req.method === "POST") {
       const body = await req.json();
 
-      return post(url, body);
+      return post(url, req, body);
     }
 
     return _404;

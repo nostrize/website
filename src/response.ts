@@ -14,10 +14,6 @@ export const _302 = new Response(null, {
   },
 });
 
-export const _409 = new Response("Name already exists", {
-  status: 409,
-});
-
 export const errorResponse = (message: string, status: number) =>
   new Response(message, { status });
 

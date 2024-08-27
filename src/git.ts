@@ -1,7 +1,10 @@
 import { mkdir } from "node:fs/promises";
 import { join } from "path";
 import { spawnSync, file } from "bun";
+
 import type { NostrJson } from "./types";
+import { validateApiKey } from "./common";
+import { Either } from "./utils";
 
 const setupSSHKey = async () => {
   const sshKeyPath = "/etc/secrets/nostrize-git-deploy-ssh-key";
@@ -30,7 +33,16 @@ const runGitCommand = (pwd: string) => (commandParts: string[]) => {
   }
 };
 
-export const commitAndPushChanges = async (json: NostrJson) => {
+export const commitAndPushChanges = async (
+  json: NostrJson,
+  headers: Headers,
+) => {
+  const either = validateApiKey("NOSTR_JSON_API_KEY")(headers);
+
+  if (Either.isLeft(either)) {
+    return either;
+  }
+
   await setupSSHKey();
 
   const repoDir = join("/tmp", "website");
@@ -56,4 +68,6 @@ export const commitAndPushChanges = async (json: NostrJson) => {
   git(["push"]);
 
   console.log("Changes committed and pushed successfully.");
+
+  return Either.right(null);
 };
