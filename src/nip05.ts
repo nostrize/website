@@ -1,6 +1,3 @@
-import { schnorr } from "@noble/curves/secp256k1";
-import { sha256 } from "@noble/hashes/sha256";
-
 import { _402, _404, errorResponse } from "./response";
 import type { HandleNip05Params, Nip05Row, NostrJson } from "./types";
 import { Either, not } from "./utils";
@@ -25,7 +22,7 @@ function getNip05Row(params: GetNip05RowParams): Either<Response, Nip05Row> {
 
   const { pubkey, canUseUntil } = nameRecord;
 
-  if (canUseUntil && diff(canUseUntil) > 0) {
+  if (canUseUntil && diff(canUseUntil) <= 0) {
     return Either.left(_402);
   }
 
@@ -91,19 +88,7 @@ export function parseAndValidateNip05Post(
     return either;
   }
 
-  const { message, signature } = body;
-
-  let messageParsed;
-
-  try {
-    messageParsed = JSON.parse(message);
-  } catch (err) {
-    return Either.left(
-      errorResponse("message is corrupt, needs to be a stringified json", 400),
-    );
-  }
-
-  const { name, pubkey, relays, canUseUntil } = messageParsed;
+  const { name, pubkey, relays, canUseUntil } = body;
 
   if (not(name && pubkey && relays)) {
     return Either.left(errorResponse("message format is wrong", 400));
@@ -126,12 +111,6 @@ export function parseAndValidateNip05Post(
 
   if (json.names[name]) {
     return Either.left(errorResponse("name already exists", 409));
-  }
-
-  const isValidSignature = schnorr.verify(signature, sha256(message), pubkey);
-
-  if (!isValidSignature) {
-    return Either.left(errorResponse("signature is not valid", 401));
   }
 
   return Either.right({ name, pubkey, relays, canUseUntil });

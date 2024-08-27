@@ -1,13 +1,49 @@
 import { handleNip05, parseAndValidateNip05Post } from "./nip05";
-import { _302, _404, favico, okResponse } from "./response";
+import { _302, _404, errorResponse, favico, okResponse } from "./response";
 import type { NostrJson } from "./types";
 import { commitAndPushChanges } from "./git";
 import { Either } from "./utils";
+import { validateMessageSignature } from "./helpers";
 
 const file = await Bun.file("db/nostr.json").text();
 const json: NostrJson = JSON.parse(file);
 
-const get = (url: URL) => {
+const get = (url: URL, headers: Headers) => {
+  const nameRegisterCheck = url.pathname.match("^/v1/nostr-json/([a-z0-9]+)$");
+
+  if (nameRegisterCheck && nameRegisterCheck.length > 1) {
+    const name = nameRegisterCheck[1];
+
+    const nameRecord = json["names"][name];
+
+    if (!nameRecord) {
+      return _404;
+    }
+
+    const message = headers.get("x-message");
+    const pubkey = nameRecord.pubkey;
+    const signature = headers.get("x-signature");
+
+    if (!message || !signature) {
+      return errorResponse("missing headers", 400);
+    }
+
+    const eitherSignature = validateMessageSignature({
+      message,
+      pubkey,
+      signature,
+    });
+
+    if (Either.isLeft(eitherSignature)) {
+      return Either.getLeft(eitherSignature);
+    }
+
+    const canUseUntil =
+      nameRecord.canUseUntil && new Date(nameRecord.canUseUntil);
+
+    return new Response(JSON.stringify({ name, canUseUntil }), { status: 200 });
+  }
+
   if (url.pathname === "/health") {
     return new Response(null, { status: 200 });
   }
@@ -67,7 +103,7 @@ const server = Bun.serve({
     const url = new URL(req.url);
 
     if (req.method === "GET") {
-      return get(url);
+      return get(url, req.headers);
     }
 
     if (req.method === "POST") {
