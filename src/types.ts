@@ -1,10 +1,14 @@
-import { Database } from "bun:sqlite";
-
 export type Nip05Row = {
-  id: number;
   name: string;
   pubkey: string;
-  relays?: string;
+  relays?: string[];
 };
 
-export type HandleNip05Params = { url: URL; db: Database };
+type Pubkey = string;
+
+export type NostrJson = {
+  names: { [name: string]: Pubkey };
+  relays: { [pubkey: Pubkey]: string[] };
+};
+
+export type HandleNip05Params = { url: URL; json: NostrJson };

@@ -1,9 +1,27 @@
-import { getNip05Row } from "./db";
 import { _404 } from "./response";
-import type { HandleNip05Params } from "./types";
+import type { HandleNip05Params, Nip05Row, NostrJson } from "./types";
+
+type GetNip05RowParams = {
+  name: string;
+  json: NostrJson;
+};
+
+function getNip05Row(params: GetNip05RowParams): Nip05Row | null {
+  const { name, json } = params;
+
+  const pubkey = json.names[name];
+
+  if (!pubkey) {
+    return null;
+  }
+
+  const relays = json.relays[pubkey];
+
+  return { name, pubkey, relays };
+}
 
 export function handleNip05(params: HandleNip05Params) {
-  const { url, db } = params;
+  const { url, json } = params;
 
   let name = url.searchParams.get("name");
 
@@ -16,22 +34,18 @@ export function handleNip05(params: HandleNip05Params) {
     name = "nostrize";
   }
 
-  const row = getNip05Row(db, name);
+  const row = getNip05Row({ name, json });
 
   if (!row) {
     return _404;
   }
 
-  const { pubkey, relays: relaysJson } = row;
-
-  const relays = relaysJson ? JSON.parse(relaysJson) : null;
-
   return new Response(
     JSON.stringify({
       names: {
-        [name]: pubkey,
+        [name]: row.pubkey,
       },
-      relays,
+      relays: row.relays,
     }),
     {
       status: 200,

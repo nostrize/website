@@ -1,6 +1,9 @@
 # Use the official Bun image from Docker Hub
 FROM oven/bun:latest
 
+# install git for nostr.json syncing
+RUN apt-get update && apt-get install -y git
+
 # Set the working directory in the container
 WORKDIR /app
 
@@ -16,6 +19,7 @@ RUN mkdir -p /app/db
 # Copy the rest of the application code
 COPY ./src ./src
 COPY ./images ./images
+COPY ./db ./db
 
 # Expose the port the app runs on
 EXPOSE 3005
