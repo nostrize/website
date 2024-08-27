@@ -73,6 +73,7 @@ Customers can use this API to:
 * Name Extension Flow: Customers can use this API to decide when to extend their registration by checking how much time they have left before their registration expires.
 
 1. **Customer makes a GET request** to `/v1/nostr-json/:name` to check the due date.
+  * **If the name does not exist:** Returns `404` Not Found.
 1. Customer includes a **signed message** in the request headers, proving ownership of the name.
   * should send `x-message` and `x-signature` in the headers. **They will be validated** against the `pubkey` of the `name`
 1. **NIP-05/Web service retrieves the public key** associated with the name.
@@ -80,7 +81,6 @@ Customers can use this API to:
   * **If valid:** The service checks the `canUseUntil` date.
     * **If current time is before canUseUntil:** Returns `200` with a body like `{ "name": "dhalsim", "canUseUntil": "2024-08-27T12:58:34.614Z" }`.
     * **If `canUseUntil` has passed:** Returns `402` Payment Required.
-    * **If the name does not exist:** Returns `404` Not Found.
   * **If signature is invalid:** Returns `401` Unauthorized.
 
 ```mermaid
@@ -89,6 +89,10 @@ sequenceDiagram
   participant NIP-05_Web_Service
 
   Customer->>NIP-05_Web_Service: GET /v1/nostr-json/dhalsim with signed token
+  alt Name does not exist (404)
+      NIP-05_Web_Service-->>Customer: 404 Not Found
+  end
+
   NIP-05_Web_Service->>NIP-05_Web_Service: Retrieve pubkey of dhalsim
   NIP-05_Web_Service->>NIP-05_Web_Service: Verify signature with pubkey
   alt Invalid signature
@@ -99,8 +103,6 @@ sequenceDiagram
           NIP-05_Web_Service-->>Customer: 200 OK with canUseUntil date
       else Payment required (402)
           NIP-05_Web_Service-->>Customer: 402 Payment Required
-      else Name does not exist (404)
-          NIP-05_Web_Service-->>Customer: 404 Not Found
       end
   end
 ```
