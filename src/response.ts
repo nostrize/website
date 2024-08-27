@@ -1,5 +1,7 @@
 import { file } from "bun";
 
+export const _402 = new Response("Payment Required", { status: 402 });
+
 export const _404 = new Response("Not Found", {
   status: 404,
   headers: {

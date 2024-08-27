@@ -1,4 +1,4 @@
-import { handleNip05, validateNip05Post } from "./nip05";
+import { handleNip05, parseAndValidateNip05Post } from "./nip05";
 import { _302, _404, favico, okResponse } from "./response";
 import type { NostrJson } from "./types";
 import { commitAndPushChanges } from "./git";
@@ -31,7 +31,11 @@ const get = (url: URL) => {
 
 const post = async (url: URL, req: Request, body: any) => {
   if (url.pathname === "/v1/nostr-json/") {
-    const either = validateNip05Post(body, req.headers, json);
+    const either = parseAndValidateNip05Post({
+      body,
+      reqHeaders: req.headers,
+      json,
+    });
 
     if (Either.isLeft(either)) {
       return Either.getLeft(either);
@@ -40,7 +44,8 @@ const post = async (url: URL, req: Request, body: any) => {
     const { name, pubkey, relays } = Either.getRight(either);
 
     // update memory object
-    json["names"][name] = pubkey;
+    // you can't use it until someone pays for it, then canUseUntil will be updated
+    json["names"][name] = { pubkey, canUseUntil: Date.now() };
     json["relays"][pubkey] = relays;
 
     // push change to git

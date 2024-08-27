@@ -1,7 +1,7 @@
 import { schnorr } from "@noble/curves/secp256k1";
 import { sha256 } from "@noble/hashes/sha256";
 
-import { _404, errorResponse } from "./response";
+import { _402, _404, errorResponse } from "./response";
 import type { HandleNip05Params, Nip05Row, NostrJson } from "./types";
 import { Either, not } from "./utils";
 import { validateApiKey } from "./common";
@@ -11,18 +11,27 @@ type GetNip05RowParams = {
   json: NostrJson;
 };
 
-function getNip05Row(params: GetNip05RowParams): Nip05Row | null {
+function getNip05Row(params: GetNip05RowParams): Either<Response, Nip05Row> {
   const { name, json } = params;
 
-  const pubkey = json.names[name];
+  const nameRecord = json.names[name];
 
-  if (!pubkey) {
-    return null;
+  if (!nameRecord) {
+    return Either.left(_404);
+  }
+
+  const now = Date.now();
+  const diff = (until: number) => until - now;
+
+  const { pubkey, canUseUntil } = nameRecord;
+
+  if (canUseUntil && diff(canUseUntil) > 0) {
+    return Either.left(_402);
   }
 
   const relays = json.relays[pubkey];
 
-  return { name, pubkey, relays };
+  return Either.right({ name, pubkey, relays, canUseUntil });
 }
 
 export function handleNip05(params: HandleNip05Params) {
@@ -39,11 +48,13 @@ export function handleNip05(params: HandleNip05Params) {
     name = "nostrize";
   }
 
-  const row = getNip05Row({ name, json });
+  const rowEither = getNip05Row({ name, json });
 
-  if (!row) {
-    return _404;
+  if (Either.isLeft(rowEither)) {
+    return Either.getLeft(rowEither);
   }
+
+  const row = Either.getRight(rowEither);
 
   return new Response(
     JSON.stringify({
@@ -63,11 +74,17 @@ export function handleNip05(params: HandleNip05Params) {
 
 const jsonApiKeyValidate = validateApiKey("NOSTR_JSON_API_KEY");
 
-export function validateNip05Post(
-  body: any,
-  reqHeaders: Headers,
-  json: NostrJson,
-) {
+type ParseAndValidateNip05PostParams = {
+  body: any;
+  reqHeaders: Headers;
+  json: NostrJson;
+};
+
+export function parseAndValidateNip05Post(
+  params: ParseAndValidateNip05PostParams,
+): Either<Response, Nip05Row> {
+  const { body, reqHeaders, json } = params;
+
   const either = jsonApiKeyValidate(reqHeaders);
 
   if (Either.isLeft(either)) {
@@ -86,7 +103,7 @@ export function validateNip05Post(
     );
   }
 
-  const { name, pubkey, relays } = messageParsed;
+  const { name, pubkey, relays, canUseUntil } = messageParsed;
 
   if (not(name && pubkey && relays)) {
     return Either.left(errorResponse("message format is wrong", 400));
@@ -103,6 +120,10 @@ export function validateNip05Post(
     return Either.left(errorResponse("message format is wrong", 409));
   }
 
+  if (canUseUntil && typeof canUseUntil !== "number") {
+    return Either.left(errorResponse("message format is wrong", 409));
+  }
+
   if (json.names[name]) {
     return Either.left(errorResponse("name already exists", 409));
   }
@@ -113,5 +134,5 @@ export function validateNip05Post(
     return Either.left(errorResponse("signature is not valid", 401));
   }
 
-  return Either.right({ name, pubkey, relays });
+  return Either.right({ name, pubkey, relays, canUseUntil });
 }
