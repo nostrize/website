@@ -1,3 +1,5 @@
+import { join } from "node:path";
+
 import { handleNip05, parseAndValidateNip05Post } from "./nip05";
 import { _302, _404, errorResponse, favico, okResponse } from "./response";
 import type { NostrJson } from "./types";
@@ -8,10 +10,10 @@ import { validateMessageSignature } from "./helpers";
 const file = await Bun.file("db/nostr.json").text();
 const json: NostrJson = JSON.parse(file);
 
-const get = (url: URL, headers: Headers) => {
+const get = async (url: URL, headers: Headers) => {
   const nameRegisterCheck = url.pathname.match("^/v1/nostr-json/([a-z0-9]+)$");
 
-  if (nameRegisterCheck && nameRegisterCheck.length > 1) {
+  if (nameRegisterCheck && nameRegisterCheck.length === 2) {
     const name = nameRegisterCheck[1];
 
     const nameRecord = json["names"][name];
@@ -60,6 +62,22 @@ const get = (url: URL, headers: Headers) => {
 
   if (url.pathname === "/favicon.ico") {
     return favico;
+  }
+
+  const imagesPath = url.pathname.match(/^\/images\/.+\.(\w+)$/);
+
+  if (imagesPath?.input) {
+    const file = Bun.file(join(import.meta.dir, "../", imagesPath.input));
+    const exists = await file.exists();
+
+    if (exists) {
+      return new Response(file, {
+        headers: {
+          "Content-Type": `image/${imagesPath[1]}`,
+        },
+        status: 200,
+      });
+    }
   }
 
   return _404;
