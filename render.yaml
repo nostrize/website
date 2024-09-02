@@ -1,4 +1,5 @@
 # Exported from Render on 2024-08-26T20:28:29Z
+version: "1"
 services:
 - type: web
   name: website
@@ -14,20 +15,3 @@ services:
   - www.nostrize.me
   - nostrize.me
   healthCheckPath: /health
-
-- type: web
-  name: proxy-service
-  runtime: docker
-  repo: https://github.com/nostrize/website
-  plan: free
-  envVars:
-  - fromGroup: nostrize-website
-  region: frankfurt
-  dockerContext: .
-  dockerfilePath: ./Dockerfile
-  dockerCommand: bun run src/proxy-service.ts
-  domains:
-  - www.nostrize.me
-  - nostrize.me
-  healthCheckPath: /health
-version: "1"
