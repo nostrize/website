@@ -11,7 +11,7 @@ WORKDIR /app
 COPY package.json bun.lockb ./
 
 # Install dependencies
-RUN bun install
+RUN bun install --production
 
 # Ensure db directory exists with proper permissions
 RUN mkdir -p /app/db
