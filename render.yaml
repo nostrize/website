@@ -14,4 +14,20 @@ services:
   - www.nostrize.me
   - nostrize.me
   healthCheckPath: /health
+
+- type: web
+  name: proxy-service
+  runtime: docker
+  repo: https://github.com/nostrize/website
+  plan: free
+  envVars:
+  - fromGroup: nostrize-website
+  region: frankfurt
+  dockerContext: .
+  dockerfilePath: ./Dockerfile
+  dockerCommand: bun run src/proxy-service.ts
+  domains:
+  - www.nostrize.me
+  - nostrize.me
+  healthCheckPath: /health
 version: "1"
