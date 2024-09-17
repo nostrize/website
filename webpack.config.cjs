@@ -7,7 +7,7 @@ module.exports = {
     "nip65-manager": "./src/pages/nip65-manager.js",
   },
   output: {
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(__dirname, "pages"),
     filename: "[name].js",
   },
   module: {

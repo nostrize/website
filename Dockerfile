@@ -20,10 +20,7 @@ RUN mkdir -p /app/db
 COPY ./src ./src
 COPY ./images ./images
 COPY ./db ./db
-
-# Build svelte code
-COPY ./build.sh ./build.sh
-RUN bun run build
+COPY ./pages ./pages
 
 # Expose the port the app runs on
 EXPOSE 3005
