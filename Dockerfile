@@ -22,6 +22,7 @@ COPY ./images ./images
 COPY ./db ./db
 
 # Build svelte code
+COPY ./build.sh ./build.sh
 RUN bun run build
 COPY ./dist ./dist
 
