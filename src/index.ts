@@ -64,6 +64,17 @@ const get = async (url: URL, headers: Headers) => {
     return favico;
   }
 
+  const distPath = url.pathname.match(/^\/dist\/.+\.(\w+)$/);
+
+  if (distPath?.input) {
+    const file = Bun.file(join(import.meta.dir, "../", distPath.input));
+    const exists = await file.exists();
+
+    if (exists) {
+      return new Response(file);
+    }
+  }
+
   const imagesPath = url.pathname.match(/^\/images\/.+\.(\w+)$/);
 
   if (imagesPath?.input) {

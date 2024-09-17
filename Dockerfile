@@ -21,6 +21,10 @@ COPY ./src ./src
 COPY ./images ./images
 COPY ./db ./db
 
+# Build svelte code
+RUN bun run build
+COPY ./dist ./dist
+
 # Expose the port the app runs on
 EXPOSE 3005
 
