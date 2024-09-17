@@ -64,10 +64,10 @@ const get = async (url: URL, headers: Headers) => {
     return favico;
   }
 
-  const distPath = url.pathname.match(/^\/dist\/.+\.(\w+)$/);
+  const pagesPath = url.pathname.match(/^\/pages\/.+\.(\w+)$/);
 
-  if (distPath?.input) {
-    const file = Bun.file(join(import.meta.dir, "../", distPath.input));
+  if (pagesPath?.input) {
+    const file = Bun.file(join(import.meta.dir, "../", pagesPath.input));
     const exists = await file.exists();
 
     if (exists) {
