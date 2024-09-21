@@ -9,7 +9,15 @@
 
   let allRelays;
 
-  setTimeout(async () => {
+  function ensureNip07Loaded(callback) {
+    if (window.nostr) {
+      callback();
+    } else {
+      setTimeout(ensureNip07Loaded, 100, callback);
+    }
+  }
+
+  ensureNip07Loaded(async () => {
     const nip07Relays = await window.nostr.getRelays();
     const pubkey = await window.nostr.getPublicKey();
 
@@ -49,7 +57,7 @@
         error = null;
       }, 5000);
     }
-  }, 1000);
+  });
 
   function addRelay() {
     nip65Relays = [...nip65Relays, { relay: "", read: true, write: true }];

@@ -32,7 +32,7 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-// (125:2) {#if nip65Relays.length > 0}
+// (133:2) {#if nip65Relays.length > 0}
 function create_if_block_2(ctx) {
 	let div0;
 	let t0;
@@ -131,7 +131,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (127:6) {#each nip65Relays as relay, index}
+// (135:6) {#each nip65Relays as relay, index}
 function create_each_block(ctx) {
 	let div;
 	let input0;
@@ -248,7 +248,7 @@ function create_each_block(ctx) {
 	};
 }
 
-// (163:2) {#if error}
+// (171:2) {#if error}
 function create_if_block_1(ctx) {
 	let p;
 	let t;
@@ -274,7 +274,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (167:2) {#if success}
+// (175:2) {#if success}
 function create_if_block(ctx) {
 	let p;
 	let t;
@@ -380,6 +380,14 @@ function create_fragment(ctx) {
 	};
 }
 
+function ensureNip07Loaded(callback) {
+	if (window.nostr) {
+		callback();
+	} else {
+		setTimeout(ensureNip07Loaded, 100, callback);
+	}
+}
+
 function instance($$self, $$props, $$invalidate) {
 	let nip65Relays = [];
 	let error = "";
@@ -387,52 +395,49 @@ function instance($$self, $$props, $$invalidate) {
 	const copyOfNip65Relays = [...nip65Relays];
 	let allRelays;
 
-	setTimeout(
-		async () => {
-			const nip07Relays = await window.nostr.getRelays();
-			const pubkey = await window.nostr.getPublicKey();
+	ensureNip07Loaded(async () => {
+		const nip07Relays = await window.nostr.getRelays();
+		const pubkey = await window.nostr.getPublicKey();
 
-			allRelays = [
-				...Object.entries(nip07Relays).map(([relayAddress, relayProps]) => ({ relay: relayAddress, ...relayProps })),
-				...copyOfNip65Relays
-			];
+		allRelays = [
+			...Object.entries(nip07Relays).map(([relayAddress, relayProps]) => ({ relay: relayAddress, ...relayProps })),
+			...copyOfNip65Relays
+		];
 
-			const pool = new nostr_tools__WEBPACK_IMPORTED_MODULE_2__.SimplePool();
+		const pool = new nostr_tools__WEBPACK_IMPORTED_MODULE_2__.SimplePool();
 
-			const event = await pool.get(allRelays.map(r => r.relay), {
-				kinds: [10002],
-				authors: [pubkey],
-				limit: 1
-			});
+		const event = await pool.get(allRelays.map(r => r.relay), {
+			kinds: [10002],
+			authors: [pubkey],
+			limit: 1
+		});
 
-			if (event) {
-				$$invalidate(0, nip65Relays = event.tags.filter(tag => tag[0] === "r").map(tag => ({
-					relay: tag[1],
-					read: !tag[2] || tag[2] === "read",
-					write: !tag[2] || tag[2] === "write"
-				})));
+		if (event) {
+			$$invalidate(0, nip65Relays = event.tags.filter(tag => tag[0] === "r").map(tag => ({
+				relay: tag[1],
+				read: !tag[2] || tag[2] === "read",
+				write: !tag[2] || tag[2] === "write"
+			})));
 
-				$$invalidate(2, success = "Fetched NIP-65 relays");
+			$$invalidate(2, success = "Fetched NIP-65 relays");
 
-				setTimeout(
-					() => {
-						$$invalidate(2, success = null);
-					},
-					5000
-				);
-			} else {
-				$$invalidate(1, error = "Couldn't fetch any relays");
+			setTimeout(
+				() => {
+					$$invalidate(2, success = null);
+				},
+				5000
+			);
+		} else {
+			$$invalidate(1, error = "Couldn't fetch any relays");
 
-				setTimeout(
-					() => {
-						$$invalidate(1, error = null);
-					},
-					5000
-				);
-			}
-		},
-		1000
-	);
+			setTimeout(
+				() => {
+					$$invalidate(1, error = null);
+				},
+				5000
+			);
+		}
+	});
 
 	function addRelay() {
 		$$invalidate(0, nip65Relays = [...nip65Relays, { relay: "", read: true, write: true }]);
