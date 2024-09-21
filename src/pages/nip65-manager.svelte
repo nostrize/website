@@ -13,7 +13,7 @@
     if (window.nostr) {
       callback();
     } else {
-      setTimeout(ensureNip07Loaded, 100, callback);
+      setTimeout(ensureNip07Loaded, 10, callback);
     }
   }
 
