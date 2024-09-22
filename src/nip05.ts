@@ -2,6 +2,7 @@ import { _402, _404, errorResponse } from "./response";
 import type { HandleNip05Params, Nip05Row, NostrJson } from "./types";
 import { Either, not } from "./utils";
 import { validateApiKey } from "./common";
+import { getCorsHeaders } from "./helpers";
 
 type GetNip05RowParams = {
   name: string;
@@ -64,6 +65,7 @@ export function handleNip05(params: HandleNip05Params) {
       status: 200,
       headers: {
         "Content-Type": "application/json",
+        ...getCorsHeaders(),
       },
     },
   );

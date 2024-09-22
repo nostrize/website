@@ -5,7 +5,7 @@ import { _302, _404, errorResponse, favico, okResponse } from "./response";
 import type { NostrJson } from "./types";
 import { commitAndPushChanges } from "./git";
 import { Either } from "./utils";
-import { validateMessageSignature } from "./helpers";
+import { getCorsHeaders, validateMessageSignature } from "./helpers";
 
 const file = await Bun.file("db/nostr.json").text();
 const json: NostrJson = JSON.parse(file);
@@ -43,11 +43,14 @@ const get = async (url: URL, headers: Headers) => {
     const canUseUntil =
       nameRecord.canUseUntil && new Date(nameRecord.canUseUntil);
 
-    return new Response(JSON.stringify({ name, canUseUntil }), { status: 200 });
+    return new Response(JSON.stringify({ name, canUseUntil }), {
+      status: 200,
+      headers: getCorsHeaders(),
+    });
   }
 
   if (url.pathname === "/health") {
-    return new Response(null, { status: 200 });
+    return new Response(null, { status: 200, headers: getCorsHeaders() });
   }
 
   // Handle the /.well-known/nostr.json?name=xxx path
@@ -71,7 +74,7 @@ const get = async (url: URL, headers: Headers) => {
     const exists = await file.exists();
 
     if (exists) {
-      return new Response(file);
+      return new Response(file, { headers: getCorsHeaders() });
     }
   }
 
@@ -85,6 +88,7 @@ const get = async (url: URL, headers: Headers) => {
       return new Response(file, {
         headers: {
           "Content-Type": `image/${imagesPath[1]}`,
+          ...getCorsHeaders(),
         },
         status: 200,
       });
