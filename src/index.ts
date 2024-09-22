@@ -131,7 +131,7 @@ const post = async (url: URL, req: Request, body: any) => {
 };
 
 const server = Bun.serve({
-  port: 3005,
+  port: process.env.PORT || 3005,
   async fetch(req) {
     const url = new URL(req.url);
 
