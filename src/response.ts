@@ -38,9 +38,4 @@ export const okResponse = new Response(null, {
   headers: getCorsHeaders(),
 });
 
-export const favico = new Response(file("images/favicon.ico"), {
-  headers: {
-    ...getCorsHeaders(),
-    "Content-Type": "image/x-icon",
-  },
-});
+export const favico = new Response(file("images/favicon.ico"));
