@@ -53,6 +53,16 @@ const get = async (url: URL, headers: Headers) => {
     return new Response(null, { status: 200, headers: getCorsHeaders() });
   }
 
+  if (url.pathname === "/manifest.json") {
+    return new Response(Bun.file("manifest.json"), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        ...getCorsHeaders(),
+      },
+    });
+  }
+
   // Handle the /.well-known/nostr.json?name=xxx path
   if (url.pathname === "/.well-known/nostr.json") {
     return handleNip05({ url, json });
