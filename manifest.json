@@ -1,0 +1,16 @@
+{
+  "short_name": "Nostrize",
+  "name": "Nostrize: Sneak Nostr into the Web",
+  "icons": [
+    {
+      "src": "/images/favicon.ico",
+      "type": "image/x-icon",
+      "sizes": "256x256"
+    },
+    {
+      "src": "/images/logo.png",
+      "type": "image/png",
+      "sizes": "450x450"
+    }
+  ]
+}
