@@ -54,7 +54,11 @@ const get = async (url: URL, headers: Headers) => {
   }
 
   if (url.pathname === "/manifest.json") {
-    return new Response(Bun.file("manifest.json"), {
+    const manifestFile = Bun.file(
+      join(import.meta.dir, "../", "manifest.json"),
+    );
+
+    return new Response(manifestFile, {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -141,7 +145,7 @@ const post = async (url: URL, req: Request, body: any) => {
 };
 
 const server = Bun.serve({
-  port: process.env.PORT || 3005,
+  port: process.env.PORT || 3006,
   async fetch(req) {
     const url = new URL(req.url);
 
