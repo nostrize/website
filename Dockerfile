@@ -17,6 +17,7 @@ RUN bun install --production
 RUN mkdir -p /app/db
 
 # Copy the rest of the application code
+COPY ./manifest.json ./manifest.json
 COPY ./src ./src
 COPY ./images ./images
 COPY ./db ./db
