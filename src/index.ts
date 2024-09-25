@@ -72,7 +72,7 @@ const get = async (url: URL, headers: Headers) => {
     return handleNip05({ url, json });
   }
 
-  if (url.pathname === "/") {
+  if (url.pathname === "/" || url.pathname === "") {
     // Temporarily redirect main page to Nostrize extension github
     return _302;
   }
