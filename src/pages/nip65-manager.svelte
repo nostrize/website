@@ -21,19 +21,27 @@
     const nip07Relays = await window.nostr.getRelays();
     const pubkey = await window.nostr.getPublicKey();
 
-    allRelays = [
+    const PROFILE_RELAYS = [
+      "wss://purplepag.es",
+      "wss://relay.nos.social",
+      "wss://user.kindpag.es",
+      "wss://relay.nostr.band",
+    ];
+
+    allRelays = new Set([
       ...Object.entries(nip07Relays).map(([relayAddress, relayProps]) => ({
         relay: relayAddress,
         ...relayProps,
       })),
       ...copyOfNip65Relays,
-    ];
+      ...PROFILE_RELAYS.map((r) => ({ relay: r, read: true })),
+    ]);
 
     const pool = new SimplePool();
 
     const event = await pool.get(
       allRelays.map((r) => r.relay),
-      { kinds: [10002], authors: [pubkey], limit: 1 },
+      { kinds: [10002], authors: [pubkey], limit: 1 }
     );
 
     if (event) {
@@ -71,7 +79,7 @@
     nip65Relays = nip65Relays.map((relay, i) =>
       i === index
         ? { ...relay, relay: url, read: isRead, write: isWrite }
-        : relay,
+        : relay
     );
   }
 
@@ -104,8 +112,8 @@
       const res = await Promise.allSettled(
         pool.publish(
           allRelays.map((r) => r.relay),
-          signedEvent,
-        ),
+          signedEvent
+        )
       );
 
       const publishedCount = res.filter((r) => r.status === "fulfilled").length;
